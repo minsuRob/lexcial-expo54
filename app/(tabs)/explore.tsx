@@ -2,7 +2,7 @@ import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useState } from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { lazy, Suspense } from "react";
 import { editorStyles } from "@/components/dom-components/editorStyles";
 
@@ -231,23 +231,220 @@ const renderRichText = (editorStateJson: string | null): React.ReactNode => {
   }
 };
 
+// Tree 뷰 렌더링 함수
+const renderTreeNode = (node: any, depth: number = 0): React.ReactNode => {
+  const indent = depth * 20;
+  const nodeType = node.type || 'unknown';
+  const nodeKey = node.key || node.id || Math.random();
+  
+  let nodeLabel = nodeType;
+  if (node.tag) nodeLabel += ` (${node.tag})`;
+  if (node.text) nodeLabel += ` "${node.text.substring(0, 20)}${node.text.length > 20 ? '...' : ''}"`;
+  if (node.checked !== undefined) nodeLabel += ` [checked: ${node.checked}]`;
+  if (node.listType) nodeLabel += ` [listType: ${node.listType}]`;
+
+  return (
+    <View key={nodeKey} style={{ marginLeft: indent, marginVertical: 2 }}>
+      <Text style={{ fontSize: 12, fontFamily: 'monospace', color: '#333' }}>
+        {nodeLabel}
+      </Text>
+      {node.children && node.children.map((child: any, index: number) => 
+        renderTreeNode(child, depth + 1)
+      )}
+    </View>
+  );
+};
+
+const renderTreeView = (editorStateJson: string | null): React.ReactNode => {
+  if (!editorStateJson) return <Text style={{ fontSize: 12 }}>No content</Text>;
+
+  try {
+    const editorState = JSON.parse(editorStateJson);
+    if (editorState.root) {
+      return (
+        <View style={{ backgroundColor: '#222', padding: 8, borderRadius: 4 }}>
+          <Text style={{ color: '#fff', fontSize: 12, marginBottom: 8, fontWeight: 'bold' }}>
+            Tree View
+          </Text>
+          <ScrollView style={{ maxHeight: 300 }}>
+            {renderTreeNode(editorState.root)}
+          </ScrollView>
+        </View>
+      );
+    }
+    return <Text style={{ fontSize: 12 }}>No root node</Text>;
+  } catch (error) {
+    return <Text style={{ fontSize: 12 }}>Error parsing tree</Text>;
+  }
+};
+
+// DOM Export 함수
+const exportDOM = (editorStateJson: string | null): string => {
+  if (!editorStateJson) return 'No content';
+
+  try {
+    const editorState = JSON.parse(editorStateJson);
+    const html: string[] = [];
+
+    const nodeToHTML = (node: any): string => {
+      if (node.type === 'text') {
+        let style = '';
+        if (node.format & 1) style += 'font-weight: bold; ';
+        if (node.format & 2) style += 'font-style: italic; ';
+        if (node.format & 4) style += 'text-decoration: underline; ';
+        if (node.format & 8) style += 'text-decoration: line-through; ';
+        
+        if (style) {
+          return `<span style="${style.trim()}">${node.text || ''}</span>`;
+        }
+        return node.text || '';
+      }
+
+      if (node.type === 'heading') {
+        const tag = node.tag || 'h1';
+        const content = node.children ? node.children.map(nodeToHTML).join('') : '';
+        return `<${tag} class="editor-heading-${tag}">${content}</${tag}>`;
+      }
+
+      if (node.type === 'paragraph') {
+        const content = node.children ? node.children.map(nodeToHTML).join('') : '';
+        return `<p class="editor-paragraph">${content}</p>`;
+      }
+
+      if (node.type === 'quote') {
+        const content = node.children ? node.children.map(nodeToHTML).join('') : '';
+        return `<blockquote class="editor-quote">${content}</blockquote>`;
+      }
+
+      if (node.type === 'code') {
+        const content = node.children ? node.children.map((c: any) => c.text || '').join('') : '';
+        return `<pre class="editor-code">${content}</pre>`;
+      }
+
+      if (node.type === 'link') {
+        const content = node.children ? node.children.map(nodeToHTML).join('') : '';
+        return `<a href="${node.url || '#'}" class="editor-link">${content}</a>`;
+      }
+
+      if (node.type === 'list') {
+        const tag = node.listType === 'number' ? 'ol' : 'ul';
+        const listClass = node.listType === 'check' ? 'editor-checklist' : `editor-list-${tag}`;
+        const items = node.children ? node.children.map((item: any) => {
+          const content = item.children ? item.children.map(nodeToHTML).join('') : '';
+          const role = node.listType === 'check' ? `role="checkbox" aria-checked="${item.checked ? 'true' : 'false'}"` : '';
+          return `<li class="editor-listitem" ${role}>${content}</li>`;
+        }).join('') : '';
+        return `<${tag} class="${listClass}">${items}</${tag}>`;
+      }
+
+      if (node.children) {
+        return node.children.map(nodeToHTML).join('');
+      }
+
+      return '';
+    };
+
+    if (editorState.root && editorState.root.children) {
+      const content = editorState.root.children.map(nodeToHTML).join('');
+      return `<div>${content}</div>`;
+    }
+
+    return 'No content';
+  } catch (error) {
+    return `Error: ${error}`;
+  }
+};
+
 const Editor = lazy(() => import("@/components/dom-components/hello-dom"));
 
 export default function TabTwoScreen() {
   const [editorState, setEditorState] = useState<string | null>(null);
   const [plainText, setPlainText] = useState("");
+  const [activeTab, setActiveTab] = useState<'render' | 'tree' | 'dom'>('render');
+  const [domExport, setDomExport] = useState<string>('');
   const wordCount = editorState?.split(" ").length ?? 0;
 
-  // console.log(JSON.stringify(JSON.parse(editorState ?? ""), null, 2));
+  React.useEffect(() => {
+    if (editorState) {
+      setDomExport(exportDOM(editorState));
+    }
+  }, [editorState]);
 
   return (
     <>
       <View style={{ padding: 16 }}>
-        <Text style={{ fontSize: 20, fontWeight: "bold" }}>📱 Render Side</Text>
-        <View style={{ marginVertical: 10 }}>
-          {renderRichText(editorState)}
+        <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>📱 Render Side</Text>
+        
+        {/* 탭 버튼 */}
+        <View style={{ flexDirection: 'row', marginBottom: 16, borderBottomWidth: 1, borderBottomColor: '#ddd' }}>
+          <TouchableOpacity
+            onPress={() => setActiveTab('render')}
+            style={{
+              padding: 8,
+              borderBottomWidth: activeTab === 'render' ? 2 : 0,
+              borderBottomColor: activeTab === 'render' ? '#007AFF' : 'transparent',
+              marginRight: 16,
+            }}
+          >
+            <Text style={{ color: activeTab === 'render' ? '#007AFF' : '#666', fontWeight: activeTab === 'render' ? 'bold' : 'normal' }}>
+              Render
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setActiveTab('tree')}
+            style={{
+              padding: 8,
+              borderBottomWidth: activeTab === 'tree' ? 2 : 0,
+              borderBottomColor: activeTab === 'tree' ? '#007AFF' : 'transparent',
+              marginRight: 16,
+            }}
+          >
+            <Text style={{ color: activeTab === 'tree' ? '#007AFF' : '#666', fontWeight: activeTab === 'tree' ? 'bold' : 'normal' }}>
+              Tree
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setActiveTab('dom')}
+            style={{
+              padding: 8,
+              borderBottomWidth: activeTab === 'dom' ? 2 : 0,
+              borderBottomColor: activeTab === 'dom' ? '#007AFF' : 'transparent',
+            }}
+          >
+            <Text style={{ color: activeTab === 'dom' ? '#007AFF' : '#666', fontWeight: activeTab === 'dom' ? 'bold' : 'normal' }}>
+              DOM
+            </Text>
+          </TouchableOpacity>
         </View>
-        <Text style={{ fontSize: 16 }}>Words: {wordCount}</Text>
+
+        {/* 탭 컨텐츠 */}
+        {activeTab === 'render' && (
+          <View style={{ marginVertical: 10 }}>
+            {renderRichText(editorState)}
+            <Text style={{ fontSize: 16, marginTop: 16 }}>Words: {wordCount}</Text>
+          </View>
+        )}
+
+        {activeTab === 'tree' && (
+          <View style={{ marginVertical: 10 }}>
+            {renderTreeView(editorState)}
+          </View>
+        )}
+
+        {activeTab === 'dom' && (
+          <View style={{ marginVertical: 10 }}>
+            <View style={{ backgroundColor: '#222', padding: 8, borderRadius: 4 }}>
+              <Text style={{ color: '#fff', fontSize: 12, marginBottom: 8, fontWeight: 'bold' }}>
+                Export DOM
+              </Text>
+              <ScrollView style={{ maxHeight: 300 }}>
+                <Text style={{ color: '#fff', fontSize: 11, fontFamily: 'monospace' }}>
+                  {domExport || 'No content'}
+                </Text>
+              </ScrollView>
+            </View>
+          </View>
+        )}
       </View>
       <Suspense fallback={<View><Text>Loading editor...</Text></View>}>
         <Editor setPlainText={setPlainText} setEditorState={setEditorState} />

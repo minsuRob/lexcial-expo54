@@ -6,6 +6,36 @@
  *
  */
 
+:root {
+  /* 공통 스타일 상수 - editorStyles.ts와 동기화 */
+  --editor-font-size-input: 15px;
+  --editor-font-size-h1: 24px;
+  --editor-font-size-h2: 15px;
+  --editor-font-size-paragraph: 15px;
+  --editor-font-size-quote: 15px;
+  --editor-font-size-code: 13px;
+  --editor-font-size-list-item: 15px;
+  
+  --editor-color-text: rgb(5, 5, 5);
+  --editor-color-text-secondary: rgb(101, 103, 107);
+  --editor-color-link: rgb(33, 111, 219);
+  --editor-color-placeholder: #999;
+  --editor-color-code-background: rgb(240, 242, 245);
+  --editor-color-quote-border: rgb(206, 208, 212);
+  
+  --editor-font-weight-h1: 400;
+  --editor-font-weight-h2: 700;
+  
+  --editor-spacing-heading-h1-margin-bottom: 12px;
+  --editor-spacing-heading-h2-margin-top: 10px;
+  --editor-spacing-quote-padding-left: 16px;
+  --editor-spacing-quote-border-width: 4px;
+  --editor-spacing-list-item-margin-left: 16px;
+  --editor-spacing-code-padding: 8px;
+  
+  --editor-code-line-height: 20;
+}
+
 body {
   margin: 0;
   padding-inline: 16px;
@@ -75,8 +105,8 @@ h1 {
 .editor-input {
   min-height: 150px;
   resize: none;
-  font-size: 15px;
-  caret-color: rgb(5, 5, 5);
+  font-size: var(--editor-font-size-input);
+  caret-color: var(--editor-color-text);
   position: relative;
   tab-size: 1;
   outline: 0;
@@ -85,13 +115,13 @@ h1 {
 }
 
 .editor-placeholder {
-  color: #999;
+  color: var(--editor-color-placeholder);
   overflow: hidden;
   position: absolute;
   text-overflow: ellipsis;
   top: 15px;
   left: 10px;
-  font-size: 15px;
+  font-size: var(--editor-font-size-input);
   user-select: none;
   display: inline-block;
   pointer-events: none;
@@ -118,14 +148,14 @@ h1 {
 }
 
 .editor-text-code {
-  background-color: rgb(240, 242, 245);
+  background-color: var(--editor-color-code-background);
   padding: 1px 0.25rem;
   font-family: Menlo, Consolas, Monaco, monospace;
   font-size: 94%;
 }
 
 .editor-link {
-  color: rgb(33, 111, 219);
+  color: var(--editor-color-link);
   text-decoration: none;
 }
 
@@ -143,12 +173,12 @@ h1 {
 }
 
 .editor-code {
-  background-color: rgb(240, 242, 245);
+  background-color: var(--editor-color-code-background);
   font-family: Menlo, Consolas, Monaco, monospace;
   display: block;
-  padding: 8px 8px 8px 52px;
+  padding: var(--editor-spacing-code-padding) var(--editor-spacing-code-padding) var(--editor-spacing-code-padding) 52px;
   line-height: 1.53;
-  font-size: 13px;
+  font-size: var(--editor-font-size-code);
   margin: 0;
   margin-top: 8px;
   margin-bottom: 8px;
@@ -225,20 +255,20 @@ h1 {
 }
 
 .editor-heading-h1 {
-  font-size: 24px;
-  color: rgb(5, 5, 5);
-  font-weight: 400;
+  font-size: var(--editor-font-size-h1);
+  color: var(--editor-color-text);
+  font-weight: var(--editor-font-weight-h1);
   margin: 0;
-  margin-bottom: 12px;
+  margin-bottom: var(--editor-spacing-heading-h1-margin-bottom);
   padding: 0;
 }
 
 .editor-heading-h2 {
-  font-size: 15px;
-  color: rgb(101, 103, 107);
-  font-weight: 700;
+  font-size: var(--editor-font-size-h2);
+  color: var(--editor-color-text-secondary);
+  font-weight: var(--editor-font-weight-h2);
   margin: 0;
-  margin-top: 10px;
+  margin-top: var(--editor-spacing-heading-h2-margin-top);
   padding: 0;
   text-transform: uppercase;
 }
@@ -246,24 +276,24 @@ h1 {
 .editor-quote {
   margin: 0;
   margin-left: 20px;
-  font-size: 15px;
-  color: rgb(101, 103, 107);
-  border-left-color: rgb(206, 208, 212);
-  border-left-width: 4px;
+  font-size: var(--editor-font-size-quote);
+  color: var(--editor-color-text-secondary);
+  border-left-color: var(--editor-color-quote-border);
+  border-left-width: var(--editor-spacing-quote-border-width);
   border-left-style: solid;
-  padding-left: 16px;
+  padding-left: var(--editor-spacing-quote-padding-left);
 }
 
 .editor-list-ol {
   padding: 0;
   margin: 0;
-  margin-left: 16px;
+  margin-left: var(--editor-spacing-list-item-margin-left);
 }
 
 .editor-list-ul {
   padding: 0;
   margin: 0;
-  margin-left: 16px;
+  margin-left: var(--editor-spacing-list-item-margin-left);
 }
 
 .editor-listitem {

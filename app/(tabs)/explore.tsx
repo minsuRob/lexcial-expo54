@@ -2,7 +2,7 @@ import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useState } from "react";
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
 import { lazy, Suspense } from "react";
 import { editorStyles } from "@/components/dom-components/editorStyles";
 
@@ -455,85 +455,102 @@ export default function TabTwoScreen() {
     }
   }, [editorState]);
 
+  const isWeb = Platform.OS === 'web';
+
   return (
     <>
-      <View style={{ padding: 16 }}>
-        <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>📱 Render Side</Text>
-        
-        {/* 탭 버튼 */}
-        <View style={{ flexDirection: 'row', marginBottom: 16, borderBottomWidth: 1, borderBottomColor: '#ddd' }}>
-          <TouchableOpacity
-            onPress={() => setActiveTab('render')}
-            style={{
-              padding: 8,
-              borderBottomWidth: activeTab === 'render' ? 2 : 0,
-              borderBottomColor: activeTab === 'render' ? '#007AFF' : 'transparent',
-              marginRight: 16,
-            }}
-          >
-            <Text style={{ color: activeTab === 'render' ? '#007AFF' : '#666', fontWeight: activeTab === 'render' ? 'bold' : 'normal' }}>
-              Render
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('tree')}
-            style={{
-              padding: 8,
-              borderBottomWidth: activeTab === 'tree' ? 2 : 0,
-              borderBottomColor: activeTab === 'tree' ? '#007AFF' : 'transparent',
-              marginRight: 16,
-            }}
-          >
-            <Text style={{ color: activeTab === 'tree' ? '#007AFF' : '#666', fontWeight: activeTab === 'tree' ? 'bold' : 'normal' }}>
-              Tree
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('dom')}
-            style={{
-              padding: 8,
-              borderBottomWidth: activeTab === 'dom' ? 2 : 0,
-              borderBottomColor: activeTab === 'dom' ? '#007AFF' : 'transparent',
-            }}
-          >
-            <Text style={{ color: activeTab === 'dom' ? '#007AFF' : '#666', fontWeight: activeTab === 'dom' ? 'bold' : 'normal' }}>
-              DOM
-            </Text>
-          </TouchableOpacity>
+      <View style={{ flexDirection: isWeb ? 'row' : 'column', flex: 1 }}>
+        {/* 왼쪽: Render Side */}
+        <View style={{ flex: isWeb ? 1 : undefined, padding: 16 }}>
+          <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>📱 Render Side</Text>
+          
+          {/* 탭 버튼 */}
+          <View style={{ flexDirection: 'row', marginBottom: 16, borderBottomWidth: 1, borderBottomColor: '#ddd' }}>
+            <TouchableOpacity
+              onPress={() => setActiveTab('render')}
+              style={{
+                padding: 8,
+                borderBottomWidth: activeTab === 'render' ? 2 : 0,
+                borderBottomColor: activeTab === 'render' ? '#007AFF' : 'transparent',
+                marginRight: 16,
+              }}
+            >
+              <Text style={{ color: activeTab === 'render' ? '#007AFF' : '#666', fontWeight: activeTab === 'render' ? 'bold' : 'normal' }}>
+                Render
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setActiveTab('tree')}
+              style={{
+                padding: 8,
+                borderBottomWidth: activeTab === 'tree' ? 2 : 0,
+                borderBottomColor: activeTab === 'tree' ? '#007AFF' : 'transparent',
+                marginRight: 16,
+              }}
+            >
+              <Text style={{ color: activeTab === 'tree' ? '#007AFF' : '#666', fontWeight: activeTab === 'tree' ? 'bold' : 'normal' }}>
+                Tree
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setActiveTab('dom')}
+              style={{
+                padding: 8,
+                borderBottomWidth: activeTab === 'dom' ? 2 : 0,
+                borderBottomColor: activeTab === 'dom' ? '#007AFF' : 'transparent',
+              }}
+            >
+              <Text style={{ color: activeTab === 'dom' ? '#007AFF' : '#666', fontWeight: activeTab === 'dom' ? 'bold' : 'normal' }}>
+                DOM
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* 탭 컨텐츠 */}
+          {activeTab === 'render' && (
+            <View style={{ marginVertical: 10 }}>
+              {renderRichText(editorState)}
+              <Text style={{ fontSize: 16, marginTop: 16 }}>Words: {wordCount}</Text>
+            </View>
+          )}
+
+          {activeTab === 'tree' && (
+            <View style={{ marginVertical: 10 }}>
+              {renderTreeView(editorState)}
+            </View>
+          )}
+
+          {activeTab === 'dom' && (
+            <View style={{ marginVertical: 10 }}>
+              <View style={{ backgroundColor: '#222', padding: 8, borderRadius: 4 }}>
+                <Text style={{ color: '#fff', fontSize: 12, marginBottom: 8, fontWeight: 'bold' }}>
+                  Export DOM
+                </Text>
+                <ScrollView style={{ maxHeight: 300 }}>
+                  <Text style={{ color: '#fff', fontSize: 11, fontFamily: 'monospace' }}>
+                    {domExport || 'No content'}
+                  </Text>
+                </ScrollView>
+              </View>
+            </View>
+          )}
         </View>
 
-        {/* 탭 컨텐츠 */}
-        {activeTab === 'render' && (
-          <View style={{ marginVertical: 10 }}>
-            {renderRichText(editorState)}
-            <Text style={{ fontSize: 16, marginTop: 16 }}>Words: {wordCount}</Text>
-          </View>
-        )}
-
-        {activeTab === 'tree' && (
-          <View style={{ marginVertical: 10 }}>
-            {renderTreeView(editorState)}
-          </View>
-        )}
-
-        {activeTab === 'dom' && (
-          <View style={{ marginVertical: 10 }}>
-            <View style={{ backgroundColor: '#222', padding: 8, borderRadius: 4 }}>
-              <Text style={{ color: '#fff', fontSize: 12, marginBottom: 8, fontWeight: 'bold' }}>
-                Export DOM
-              </Text>
-              <ScrollView style={{ maxHeight: 300 }}>
-                <Text style={{ color: '#fff', fontSize: 11, fontFamily: 'monospace' }}>
-                  {domExport || 'No content'}
-                </Text>
-              </ScrollView>
-            </View>
+        {/* 오른쪽: Editor (웹일 때만 나란히 배치) */}
+        {isWeb && (
+          <View style={{ flex: 1 }}>
+            <Suspense fallback={<View><Text>Loading editor...</Text></View>}>
+              <Editor setPlainText={setPlainText} setEditorState={setEditorState} />
+            </Suspense>
           </View>
         )}
       </View>
-      <Suspense fallback={<View><Text>Loading editor...</Text></View>}>
-        <Editor setPlainText={setPlainText} setEditorState={setEditorState} />
-      </Suspense>
+      {/* 모바일: Editor는 아래에 배치 */}
+      {!isWeb && (
+        <Suspense fallback={<View><Text>Loading editor...</Text></View>}>
+          <Editor setPlainText={setPlainText} setEditorState={setEditorState} />
+        </Suspense>
+      )}
     </>
   );
 }

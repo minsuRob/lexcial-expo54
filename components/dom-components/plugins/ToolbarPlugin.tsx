@@ -19,11 +19,6 @@ import {
   SELECTION_CHANGE_COMMAND,
   UNDO_COMMAND,
 } from "lexical";
-import {
-  INSERT_CHECK_LIST_COMMAND,
-  REMOVE_LIST_COMMAND,
-  $isListNode,
-} from "@lexical/list";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const LowPriority = 1;
@@ -41,7 +36,6 @@ export default function ToolbarPlugin() {
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
   const [isStrikethrough, setIsStrikethrough] = useState(false);
-  const [isCheckList, setIsCheckList] = useState(false);
 
   const $updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -52,22 +46,7 @@ export default function ToolbarPlugin() {
       setIsUnderline(selection.hasFormat("underline"));
       setIsStrikethrough(selection.hasFormat("strikethrough"));
     }
-
-    // Update list format
-    if ($isRangeSelection(selection)) {
-      const anchorNode = selection.anchor.getNode();
-      const element =
-        anchorNode?.getKey() === "root"
-          ? anchorNode
-          : anchorNode?.getTopLevelElementOrThrow();
-      const elementKey = element?.getKey();
-      const elementDOM = editor.getElementByKey(elementKey);
-      if (elementDOM !== null) {
-        const isCheckListElement = $isListNode(element) && element.getListType() === "check";
-        setIsCheckList(isCheckListElement);
-      }
-    }
-  }, [editor]);
+  }, []);
 
   useEffect(() => {
     return mergeRegister(
@@ -307,30 +286,6 @@ export default function ToolbarPlugin() {
             fillRule="evenodd"
             d="M2 12.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"
           />
-        </svg>
-      </button>
-      <Divider />
-      <button
-        onClick={() => {
-          if (isCheckList) {
-            editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
-          } else {
-            editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
-          }
-        }}
-        className={"toolbar-item spaced " + (isCheckList ? "active" : "")}
-        aria-label="Checkbox List"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="currentColor"
-          className="bi bi-check-square format"
-          viewBox="0 0 16 16"
-        >
-          <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
-          <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 2.354 4.294a.5.5 0 0 0-.708.708l5.333 5.333a.5.5 0 0 0 .708 0l3.833-3.833a.5.5 0 0 0 .024-.938z" />
         </svg>
       </button>
     </div>

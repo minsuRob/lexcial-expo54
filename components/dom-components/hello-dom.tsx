@@ -8,25 +8,30 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { ListNode, ListItemNode } from "@lexical/list";
 
 import ExampleTheme from "./ExampleTheme";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
 import TreeViewPlugin from "./plugins/TreeViewPlugin";
-import { $getRoot, EditorState, LexicalEditor } from "lexical";
+import { $getRoot, EditorState, LexicalEditor, $createParagraphNode, $createTextNode } from "lexical";
 
 const placeholder = "Enter some rich text...";
 
+function initialEditorState() {
+  const root = $getRoot();
+  const paragraph = $createParagraphNode();
+  paragraph.append($createTextNode(""));
+  root.append(paragraph);
+}
+
 const editorConfig = {
   namespace: "React.js Demo",
-  nodes: [ListNode, ListItemNode],
   // Handling of errors during update
   onError(error: Error) {
     throw error;
   },
   // The editor theme
   theme: ExampleTheme,
+  editorState: initialEditorState,
 };
 export default function Editor({
   setPlainText,
@@ -66,7 +71,6 @@ export default function Editor({
               ignoreSelectionChange
             />
             <HistoryPlugin />
-            <ListPlugin />
             <AutoFocusPlugin />
             {/* <TreeViewPlugin /> */}
           </div>

@@ -330,7 +330,7 @@ const renderTreeNode = (node: any, depth: number = 0): React.ReactNode => {
 
   return (
     <View key={nodeKey} style={{ marginLeft: indent, marginVertical: 2 }}>
-      <Text style={{ fontSize: 12, fontFamily: 'monospace', color: '#333' }}>
+      <Text style={{ fontSize: 12, fontFamily: 'monospace', color: '#fff' }}>
         {nodeLabel}
       </Text>
       {node.children && node.children.map((child: any, index: number) => 

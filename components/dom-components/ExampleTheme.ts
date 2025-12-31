@@ -18,11 +18,14 @@ export default {
   link: "editor-link",
   list: {
     listitem: "editor-listitem",
+    listitemChecked: "editor-listitem-checked",
+    listitemUnchecked: "editor-listitem-unchecked",
     nested: {
       listitem: "editor-nested-listitem",
     },
     ol: "editor-list-ol",
     ul: "editor-list-ul",
+    checklist: "editor-checklist",
   },
   ltr: "ltr",
   paragraph: "editor-paragraph",

@@ -270,6 +270,43 @@ h1 {
   margin: 8px 32px 8px 32px;
 }
 
+.editor-checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.editor-listitem[role="checkbox"] {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  padding-left: 0;
+}
+
+.editor-listitem[role="checkbox"]::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border: 2px solid #333;
+  border-radius: 3px;
+  margin-right: 8px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  background-color: white;
+}
+
+.editor-listitem[role="checkbox"][aria-checked="true"]::before {
+  background-color: #333;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M10 3L4.5 8.5L2 6l1.41-1.41L4.5 6.68L8.59 2.59L10 3z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px 12px;
+}
+
+.editor-listitem input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
 .editor-nested-listitem {
   list-style-type: none;
 }

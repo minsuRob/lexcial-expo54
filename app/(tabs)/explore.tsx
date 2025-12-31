@@ -1,109 +1,205 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { useState, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
+import * as Y from 'yjs';
+import type { Provider } from '@lexical/yjs';
+import { createWebRTCProvider } from '@/components/collaboration/providers';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+const CollaborationEditor = lazy(() => import('@/components/collaboration/CollaborationEditor'));
+
+const colors = [
+  '#7d0000', '#640000', '#990000', '#bf0000', '#bf4000',
+  '#004000', '#007f00', '#407f00', '#7f7f00', '#000099',
+  '#0000bf', '#0000ff', '#004040', '#404040', '#7f0040', '#bf0040'
+];
+
+function getRandomUserProfile() {
+  const names = [
+    'User 1', 'User 2', 'User 3', 'User 4', 'User 5',
+    'Editor A', 'Editor B', 'Writer 1', 'Writer 2'
+  ];
+  return {
+    name: names[Math.floor(Math.random() * names.length)],
+    color: colors[Math.floor(Math.random() * colors.length)]
+  };
+}
 
 export default function TabTwoScreen() {
+  const [userProfile1, setUserProfile1] = useState(() => getRandomUserProfile());
+  const [userProfile2, setUserProfile2] = useState(() => getRandomUserProfile());
+  const containerRef1 = useRef<HTMLDivElement>(null);
+  const containerRef2 = useRef<HTMLDivElement>(null);
+  
+  // 두 에디터가 같은 yjsDocMap을 공유해야 동기화가 됩니다
+  const sharedYjsDocMap = useMemo(() => new Map<string, Y.Doc>(), []);
+  
+  // 공유할 editorId
+  const sharedEditorId = "collaboration-editor-shared";
+  
+  // 공유 Provider를 위한 상태
+  const [sharedProvider, setSharedProvider] = useState<Provider | null>(null);
+  
+  // 공유 Provider Factory - 같은 editorId에 대해 같은 Provider를 반환
+  // createWebRTCProvider가 내부적으로 캐싱을 처리하므로 같은 id와 yjsDocMap에 대해 같은 Provider를 반환합니다
+  const sharedProviderFactory = useCallback(
+    (id: string, yjsDocMap: Map<string, Y.Doc>) => {
+      // createWebRTCProvider가 캐싱을 처리하므로 같은 id와 yjsDocMap에 대해 같은 Provider를 반환
+      const provider = createWebRTCProvider(id, yjsDocMap);
+      
+      // Provider 참조 저장 (디버깅용)
+      setTimeout(() => setSharedProvider(provider), 0);
+      
+      // 상태 관리는 CollaborationEditor의 providerFactory에서 처리하므로 여기서는 하지 않음
+      return provider;
+    },
+    [],
+  );
+  
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <div style={styles.webContainer}>
+      <div style={styles.header}>
+        <h2 style={styles.title}>실시간 협업 에디터 (Yjs CRDT)</h2>
+        <div style={styles.info}>
+          <p>
+            두 에디터가 동일한 문서 ID를 공유하므로 양쪽에서 입력하면 실시간으로 동기화됩니다.
+            다른 브라우저 창에서도 같은 URL을 열면 함께 편집할 수 있습니다.
+          </p>
+        </div>
+      </div>
+      
+      <div style={styles.controlsContainer}>
+        <div style={styles.userControl}>
+          <label>왼쪽 에디터 사용자:</label>
+          <input
+            type="text"
+            value={userProfile1.name}
+            onChange={(e) => setUserProfile1({ ...userProfile1, name: e.target.value })}
+            style={styles.input}
+          />
+          <input
+            type="color"
+            value={userProfile1.color}
+            onChange={(e) => setUserProfile1({ ...userProfile1, color: e.target.value })}
+            style={styles.colorInput}
+          />
+        </div>
+        <div style={styles.userControl}>
+          <label>오른쪽 에디터 사용자:</label>
+          <input
+            type="text"
+            value={userProfile2.name}
+            onChange={(e) => setUserProfile2({ ...userProfile2, name: e.target.value })}
+            style={styles.input}
+          />
+          <input
+            type="color"
+            value={userProfile2.color}
+            onChange={(e) => setUserProfile2({ ...userProfile2, color: e.target.value })}
+            style={styles.colorInput}
+          />
+        </div>
+      </div>
+
+      <Suspense fallback={<div style={styles.loading}>Loading editor...</div>}>
+        <div style={styles.editorsContainer}>
+          <div style={styles.editorWrapper}>
+            <CollaborationEditor
+              editorId={sharedEditorId}
+              userProfile={userProfile1}
+              containerRef={containerRef1}
+              yjsDocMap={sharedYjsDocMap}
+              providerFactory={sharedProviderFactory}
+              instanceId="editor-1"
+            />
+          </div>
+          
+          <div style={styles.divider}></div>
+          
+          <div style={styles.editorWrapper}>
+            <CollaborationEditor
+              editorId={sharedEditorId}
+              userProfile={userProfile2}
+              containerRef={containerRef2}
+              yjsDocMap={sharedYjsDocMap}
+              providerFactory={sharedProviderFactory}
+              instanceId="editor-2"
+            />
+          </div>
+        </div>
+      </Suspense>
+    </div>
   );
 }
 
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+const styles = {
+  webContainer: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    height: '100vh',
+    width: '100%',
+    overflow: 'hidden',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  header: {
+    padding: '16px',
+    backgroundColor: '#f5f5f5',
+    borderBottom: '1px solid #ddd',
   },
-});
+  title: {
+    margin: '0 0 8px 0',
+    fontSize: '24px',
+    fontWeight: 'bold' as const,
+  },
+  info: {
+    fontSize: '14px',
+    color: '#666',
+  },
+  controlsContainer: {
+    display: 'flex',
+    flexDirection: 'row' as const,
+    gap: '16px',
+    padding: '12px 16px',
+    backgroundColor: '#fafafa',
+    borderBottom: '1px solid #ddd',
+  },
+  userControl: {
+    display: 'flex',
+    flexDirection: 'row' as const,
+    alignItems: 'center',
+    gap: '8px',
+  },
+  input: {
+    padding: '4px 8px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+  },
+  colorInput: {
+    width: '40px',
+    height: '30px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    cursor: 'pointer' as const,
+  },
+  editorsContainer: {
+    display: 'flex',
+    flexDirection: 'row' as const,
+    flex: 1,
+    overflow: 'hidden',
+  },
+  editorWrapper: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    overflow: 'hidden',
+    borderRight: '1px solid #ddd',
+  },
+  divider: {
+    width: '4px',
+    backgroundColor: '#ddd',
+    cursor: 'col-resize' as const,
+  },
+  loading: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    fontSize: '16px',
+  },
+};

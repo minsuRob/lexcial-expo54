@@ -47,7 +47,7 @@ export default function HomeScreen() {
           Loading collaborative editor...
         </div>
       }>
-        <CollaborativeEditor />
+        <CollaborativeEditor setPlainText={() => {}} setEditorState={() => {}} />
       </Suspense>
 
       <div style={{

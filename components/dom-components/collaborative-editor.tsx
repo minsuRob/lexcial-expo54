@@ -1,8 +1,8 @@
 "use dom";
 import "./styles.css";
 
-import { LexicalCollaboration } from '@lexical/react/LexicalCollaborationContext';
 import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
+import { LexicalCollaboration } from '@lexical/react/LexicalCollaborationContext';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -206,39 +206,39 @@ export default function CollaborativeEditor({
             cursorColor={userProfile.color}
             cursorsContainerRef={containerRef}
           />
-          <div className="editor-container">
-            <ToolbarPlugin />
-            <div className="editor-inner">
-              <RichTextPlugin
-                contentEditable={
-                  <ContentEditable
-                    className="editor-input"
-                    aria-placeholder={placeholder}
-                    placeholder={
-                      <div className="editor-placeholder">{placeholder}</div>
-                    }
-                  />
-                }
-                ErrorBoundary={LexicalErrorBoundary}
-              />
-              <OnChangePlugin
-                onChange={(editorState, editor, tags) => {
-                  editorState.read(() => {
-                    const root = $getRoot();
-                    const textContent = root.getTextContent();
-                    setPlainText(textContent);
-                  });
-                  setEditorState(JSON.stringify(editorState.toJSON()));
-                }}
-                ignoreHistoryMergeTagChange
-                ignoreSelectionChange
-              />
-              <AutoFocusPlugin />
-              <ListPlugin />
-              <CheckListPlugin />
-              {/* <TreeViewPlugin /> */}
-            </div>
+        <div className="editor-container">
+          <ToolbarPlugin />
+          <div className="editor-inner">
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  className="editor-input"
+                  aria-placeholder={placeholder}
+                  placeholder={
+                    <div className="editor-placeholder">{placeholder}</div>
+                  }
+                />
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+            <OnChangePlugin
+              onChange={(editorState, editor, tags) => {
+                editorState.read(() => {
+                  const root = $getRoot();
+                  const textContent = root.getTextContent();
+                  setPlainText(textContent);
+                });
+                setEditorState(JSON.stringify(editorState.toJSON()));
+              }}
+              ignoreHistoryMergeTagChange
+              ignoreSelectionChange
+            />
+            <AutoFocusPlugin />
+            <ListPlugin />
+            <CheckListPlugin />
+            {/* <TreeViewPlugin /> */}
           </div>
+        </div>
         </LexicalComposer>
       </LexicalCollaboration>
     </div>

@@ -2,7 +2,7 @@ import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useState } from "react";
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
 import { lazy, Suspense } from "react";
 import { editorStyles } from "@/components/dom-components/editorStyles";
 
@@ -92,6 +92,47 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     lineHeight: 12,
   },
+  checklistDivider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 8,
+    marginLeft: 24,
+  },
+  checklistSpacer: {
+    height: 12,
+  },
+  checklistCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginLeft: 24,
+    marginVertical: 8,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  checklistCardImage: {
+    width: '100%',
+    height: 150,
+    backgroundColor: '#f0f0f0',
+    resizeMode: 'cover',
+  },
+  checklistCardContent: {
+    padding: 12,
+  },
+  checklistCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  checklistCardBody: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
   textBold: {
     fontWeight: editorStyles.fontWeight.bold as any,
   },
@@ -112,6 +153,32 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+
+// 체크리스트 카드 컴포넌트
+interface ChecklistCardProps {
+  imageUrl?: string;
+  title: string;
+  body: string;
+}
+
+const ChecklistCard: React.FC<ChecklistCardProps> = ({ 
+  imageUrl = 'https://via.placeholder.com/400x150/4A90E2/FFFFFF?text=Sample+Image',
+  title,
+  body 
+}) => {
+  return (
+    <View style={styles.checklistCard}>
+      <Image
+        source={{ uri: imageUrl }}
+        style={styles.checklistCardImage}
+      />
+      <View style={styles.checklistCardContent}>
+        <Text style={styles.checklistCardTitle}>{title}</Text>
+        <Text style={styles.checklistCardBody}>{body}</Text>
+      </View>
+    </View>
+  );
+};
 
 // 텍스트 노드의 스타일을 적용하는 헬퍼 함수
 const renderTextNode = (node: any): React.ReactNode => {
@@ -206,6 +273,24 @@ const renderRichText = (editorStateJson: string | null): React.ReactNode => {
                     </View>
                   </View>
                 );
+
+                // 체크리스트 항목 사이에 커스텀 컴포넌트 삽입 예제
+                // 첫 번째와 두 번째 항목 사이에 구분선 추가
+                if (itemIndex === 0) {
+                  elements.push(
+                    <View key={`${index}-${itemIndex}-divider`} style={styles.checklistDivider} />
+                  );
+                }
+                // 두 번째 항목 뒤에 카드 컴포넌트 추가 예제
+                if (itemIndex === 1) {
+                  elements.push(
+                    <ChecklistCard
+                      key={`${index}-${itemIndex}-card`}
+                      title="중요 항목"
+                      body="이 항목은 중요한 정보를 포함하고 있습니다. 자세한 내용을 확인하시기 바랍니다."
+                    />
+                  );
+                }
               } else {
                 // 일반 리스트: 웹과 동일한 불릿 포인트 UI 사용
                 elements.push(
